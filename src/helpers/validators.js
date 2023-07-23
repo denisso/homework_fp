@@ -12,7 +12,16 @@
  *
  * Если какие либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
-import { pipe, allPass, equals, prop, values, count, lte } from "ramda";
+import {
+  pipe,
+  allPass,
+  equals,
+  prop,
+  values,
+  count,
+  lte,
+  converge,
+} from "ramda";
 
 import { SHAPES, COLORS } from "../constants";
 
@@ -43,13 +52,16 @@ export const validateFieldN1 = allPass([
   isColorEquals(CIRCLE, isWHITE),
 ]);
 
+// Минимальное количество цветов
 const minColorsCount = (color, count) => pipe(countColor(color), lte(count));
 // 2. Как минимум две фигуры зеленые.
 export const validateFieldN2 = minColorsCount(isGREEN, 2);
 
-
 // 3. Количество красных фигур равно кол-ву синих.
-export const validateFieldN3 = () => false;
+export const validateFieldN3 = converge(equals, [
+  countColor(isRED),
+  countColor(isBLUE),
+]);
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
 export const validateFieldN4 = () => false;
