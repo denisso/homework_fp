@@ -12,22 +12,41 @@
  *
  * Если какие либо функции написаны руками (без использования библиотек) это не является ошибкой
  */
-import { compose, allPass, equals, prop } from "ramda";
+import { pipe, allPass, equals, prop, values, count, lte } from "ramda";
 
 import { SHAPES, COLORS } from "../constants";
 
-const isColorEquals = (figure, color) => compose(equals(color), prop(figure));
+const CIRCLE = prop(SHAPES.CIRCLE);
+const SQUARE = prop(SHAPES.SQUARE);
+const STAR = prop(SHAPES.STAR);
+const TRIANGLE = prop(SHAPES.TRIANGLE);
+
+const isBLUE = equals(COLORS.BLUE);
+const isGREEN = equals(COLORS.GREEN);
+const isORANGE = equals(COLORS.ORANGE);
+const isRED = equals(COLORS.RED);
+const isWHITE = equals(COLORS.WHITE);
+
+// Фигура есть в SHAPES
+// const isFigureValid = (figure) => includes(figure, values(SHAPES));
+
+const countColor = (color) => pipe(values, count(color));
+
+// Check Фигура === Цвет
+const isColorEquals = (figure, color) => pipe(figure, color);
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = allPass([
-  isColorEquals(SHAPES.STAR, COLORS.RED),
-  isColorEquals(SHAPES.SQUARE, COLORS.GREEN),
-  isColorEquals(SHAPES.TRIANGLE, COLORS.WHITE),
-  isColorEquals(SHAPES.CIRCLE, COLORS.WHITE),
+  isColorEquals(STAR, isRED),
+  isColorEquals(SQUARE, isGREEN),
+  isColorEquals(TRIANGLE, isWHITE),
+  isColorEquals(CIRCLE, isWHITE),
 ]);
 
+const minColorsCount = (color, count) => pipe(countColor(color), lte(count));
 // 2. Как минимум две фигуры зеленые.
-export const validateFieldN2 = () => false;
+export const validateFieldN2 = minColorsCount(isGREEN, 2);
+
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = () => false;
