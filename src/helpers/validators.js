@@ -20,7 +20,7 @@ import {
   values,
   count,
   lte,
-  converge,
+  converge,anyPass
 } from "ramda";
 
 import { SHAPES, COLORS } from "../constants";
@@ -39,7 +39,7 @@ const isWHITE = equals(COLORS.WHITE);
 // Фигура есть в SHAPES
 // const isFigureValid = (figure) => includes(figure, values(SHAPES));
 
-const countColor = (color) => pipe(values, count(color));
+const countColors = (color) => pipe(values, count(color));
 
 // Check Фигура === Цвет
 const isColorEquals = (figure, color) => pipe(figure, color);
@@ -53,21 +53,30 @@ export const validateFieldN1 = allPass([
 ]);
 
 // Минимальное количество цветов
-const minColorsCount = (color, count) => pipe(countColor(color), lte(count));
+const minColorsCount = (color, count) => pipe(countColors(color), lte(count));
 // 2. Как минимум две фигуры зеленые.
 export const validateFieldN2 = minColorsCount(isGREEN, 2);
 
 // 3. Количество красных фигур равно кол-ву синих.
 export const validateFieldN3 = converge(equals, [
-  countColor(isRED),
-  countColor(isBLUE),
+  countColors(isRED),
+  countColors(isBLUE),
 ]);
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
-export const validateFieldN4 = () => false;
+export const validateFieldN4 = allPass([
+  isColorEquals(STAR, isRED),
+  isColorEquals(SQUARE, isORANGE),
+  isColorEquals(CIRCLE, isBLUE),
+]);
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
-export const validateFieldN5 = () => false;
+export const validateFieldN5 = anyPass([
+    minColorsCount(isRED, 3),
+    minColorsCount(isORANGE, 3),
+    minColorsCount(isBLUE, 3),
+    minColorsCount(isGREEN, 3)
+]);
 
 // 6. Ровно две зеленые фигуры (одна из зелёных – это треугольник), плюс одна красная. Четвёртая оставшаяся любого доступного цвета, но не нарушающая первые два условия
 export const validateFieldN6 = () => false;
