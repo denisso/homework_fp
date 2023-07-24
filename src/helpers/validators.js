@@ -23,6 +23,7 @@ import {
   converge,
   anyPass,
   not,
+  map,
 } from "ramda";
 
 import { SHAPES, COLORS } from "../constants";
@@ -59,11 +60,12 @@ const minColorsCount = (color, count) => pipe(countColors(color), lte(count));
 // 2. Как минимум две фигуры зеленые.
 export const validateFieldN2 = minColorsCount(isGREEN, 2);
 
+// Количество фигур количество фигур выбранных цветов должно быть равно
+const isColorCountEquals = (colors) =>
+  converge(equals, map(countColors, colors));
+
 // 3. Количество красных фигур равно кол-ву синих.
-export const validateFieldN3 = converge(equals, [
-  countColors(isRED),
-  countColors(isBLUE),
-]);
+export const validateFieldN3 = isColorCountEquals([isRED, isBLUE]);
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
 export const validateFieldN4 = allPass([
@@ -105,9 +107,13 @@ export const validateFieldN8 = allPass([
 // 9. Все фигуры зеленые.
 export const validateFieldN9 = minColorsCount(isGREEN, 4);
 
+// выбранные фигуры должны быть одного цвета
+const isShapesSameColorEquals = (shapes) =>
+  converge(equals, shapes);
+
 // 10. Треугольник и квадрат одного цвета (не белого), остальные – любого цвета
 export const validateFieldN10 = allPass([
   isShapeColorNotEquals(SQUARE, isWHITE),
   isShapeColorNotEquals(TRIANGLE, isWHITE),
-  converge(equals, [SQUARE, TRIANGLE]),
+  isShapesSameColorEquals([SQUARE, TRIANGLE]),
 ]);
