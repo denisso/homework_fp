@@ -29,6 +29,7 @@ import {
   __,
   test,
   compose,
+  partial
 } from "ramda";
 import Api from "../tools/api";
 
@@ -54,7 +55,7 @@ const isValidValue = allPass([isStringGt10, isStringLt2, isNumbers]);
 
 const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
   const tapLog = tap(writeLog);
-
+  const handlerError = partial(handleError, ["ValidationError"]);
   const __processSequence = compose(
     andThen(
       compose(
@@ -75,7 +76,7 @@ const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
     getInteger
   );
 
-  pipe(tapLog, ifElse(isValidValue, __processSequence, tapLog))(value);
+  pipe(tapLog, ifElse(isValidValue, __processSequence, handlerError))(value);
 };
 
 export default processSequence;
