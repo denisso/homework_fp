@@ -14,38 +14,68 @@
  * Иногда промисы от API будут приходить в состояние rejected, (прямо как и API в реальной жизни)
  * Ответ будет приходить в поле {result}
  */
- import Api from '../tools/api';
+import {
+  prop,
+  partialRight,
+  assoc,
+  tap,
+  pipe,
+  ifElse,
+  andThen,
+  allPass,
+  length,
+  gt,
+  lt,
+  __,
+  test,
+  compose,
+} from "ramda";
+import Api from "../tools/api";
 
- const api = new Api();
+const api = new Api();
 
- /**
-  * Я – пример, удали меня
-  */
- const wait = time => new Promise(resolve => {
-     setTimeout(resolve, time);
- })
+const getInteger = Math.round;
+const getResult = prop(["result"]);
+const getPow2 = partialRight(Math.pow, [2]);
+const getMod3 = (val) => val % 3;
 
- const processSequence = ({value, writeLog, handleSuccess, handleError}) => {
-     /**
-      * Я – пример, удали меня
-      */
-     writeLog(value);
+const getNumberBaseRinary = pipe(
+  assoc("number", __, { from: 10, to: 2 }),
+  api.get("https://api.tech/numbers/base")
+);
 
-     api.get('https://api.tech/numbers/base', {from: 2, to: 10, number: '01011010101'}).then(({result}) => {
-         writeLog(result);
-     });
+const fetchAnimal = async (id) =>
+  await api.get(`https://animals.tech/${id}`, {});
 
-     wait(2500).then(() => {
-         writeLog('SecondLog')
+const isStringGt10 = pipe(length, gt(10));
+const isStringLt2 = pipe(length, lt(2));
+const isNumbers = test(/^[0-9]+\.?[0-9]+$/);
+const isValidValue = allPass([isStringGt10, isStringLt2, isNumbers]);
 
-         return wait(1500);
-     }).then(() => {
-         writeLog('ThirdLog');
+const processSequence = ({ value, writeLog, handleSuccess, handleError }) => {
+  const tapLog = tap(writeLog);
 
-         return wait(400);
-     }).then(() => {
-         handleSuccess('Done');
-     });
- }
+  const __processSequence = compose(
+    andThen(
+      compose(
+        andThen(compose(handleSuccess, getResult)),
+        fetchAnimal,
+        tapLog,
+        getMod3,
+        tapLog,
+        getPow2,
+        tapLog,
+        length,
+        tapLog,
+        getResult
+      )
+    ),
+    getNumberBaseRinary,
+    tapLog,
+    getInteger
+  );
+
+  pipe(tapLog, ifElse(isValidValue, __processSequence, tapLog))(value);
+};
 
 export default processSequence;
