@@ -20,7 +20,8 @@ import {
   values,
   count,
   lte,
-  converge,anyPass
+  converge,
+  anyPass,
 } from "ramda";
 
 import { SHAPES, COLORS } from "../constants";
@@ -72,17 +73,24 @@ export const validateFieldN4 = allPass([
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
 export const validateFieldN5 = anyPass([
-    minColorsCount(isRED, 3),
-    minColorsCount(isORANGE, 3),
-    minColorsCount(isBLUE, 3),
-    minColorsCount(isGREEN, 3)
+  minColorsCount(isRED, 3),
+  minColorsCount(isORANGE, 3),
+  minColorsCount(isBLUE, 3),
+  minColorsCount(isGREEN, 3),
 ]);
 
+// Равное количество цветов
+const equalsColorsCount = (color, count) =>
+  pipe(countColors(color), equals(count));
 // 6. Ровно две зеленые фигуры (одна из зелёных – это треугольник), плюс одна красная. Четвёртая оставшаяся любого доступного цвета, но не нарушающая первые два условия
-export const validateFieldN6 = () => false;
+export const validateFieldN6 = allPass([
+  equalsColorsCount(isGREEN, 2),
+  equalsColorsCount(isRED, 1),
+  isColorEquals(TRIANGLE, isGREEN),
+]);
 
 // 7. Все фигуры оранжевые.
-export const validateFieldN7 = () => false;
+export const validateFieldN7 = minColorsCount(isORANGE, 4);
 
 // 8. Не красная и не белая звезда, остальные – любого цвета.
 export const validateFieldN8 = () => false;
