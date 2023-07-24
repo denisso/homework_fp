@@ -22,6 +22,7 @@ import {
   lte,
   converge,
   anyPass,
+  not,
 } from "ramda";
 
 import { SHAPES, COLORS } from "../constants";
@@ -43,14 +44,14 @@ const isWHITE = equals(COLORS.WHITE);
 const countColors = (color) => pipe(values, count(color));
 
 // Check Фигура === Цвет
-const isColorEquals = (figure, color) => pipe(figure, color);
+const isShapeColorEquals = (figure, color) => pipe(figure, color);
 
 // 1. Красная звезда, зеленый квадрат, все остальные белые.
 export const validateFieldN1 = allPass([
-  isColorEquals(STAR, isRED),
-  isColorEquals(SQUARE, isGREEN),
-  isColorEquals(TRIANGLE, isWHITE),
-  isColorEquals(CIRCLE, isWHITE),
+  isShapeColorEquals(STAR, isRED),
+  isShapeColorEquals(SQUARE, isGREEN),
+  isShapeColorEquals(TRIANGLE, isWHITE),
+  isShapeColorEquals(CIRCLE, isWHITE),
 ]);
 
 // Минимальное количество цветов
@@ -66,9 +67,9 @@ export const validateFieldN3 = converge(equals, [
 
 // 4. Синий круг, красная звезда, оранжевый квадрат треугольник любого цвета
 export const validateFieldN4 = allPass([
-  isColorEquals(STAR, isRED),
-  isColorEquals(SQUARE, isORANGE),
-  isColorEquals(CIRCLE, isBLUE),
+  isShapeColorEquals(STAR, isRED),
+  isShapeColorEquals(SQUARE, isORANGE),
+  isShapeColorEquals(CIRCLE, isBLUE),
 ]);
 
 // 5. Три фигуры одного любого цвета кроме белого (четыре фигуры одного цвета – это тоже true).
@@ -86,17 +87,27 @@ const equalsColorsCount = (color, count) =>
 export const validateFieldN6 = allPass([
   equalsColorsCount(isGREEN, 2),
   equalsColorsCount(isRED, 1),
-  isColorEquals(TRIANGLE, isGREEN),
+  isShapeColorEquals(TRIANGLE, isGREEN),
 ]);
 
 // 7. Все фигуры оранжевые.
 export const validateFieldN7 = minColorsCount(isORANGE, 4);
 
+// Check Фигура !== Цвет
+const isShapeColorNotEquals = (figure, color) =>
+  pipe(isShapeColorEquals(figure, color), not);
 // 8. Не красная и не белая звезда, остальные – любого цвета.
-export const validateFieldN8 = () => false;
+export const validateFieldN8 = allPass([
+  isShapeColorNotEquals(STAR, isRED),
+  isShapeColorNotEquals(STAR, isWHITE),
+]);
 
 // 9. Все фигуры зеленые.
-export const validateFieldN9 = () => false;
+export const validateFieldN9 = minColorsCount(isGREEN, 4);
 
 // 10. Треугольник и квадрат одного цвета (не белого), остальные – любого цвета
-export const validateFieldN10 = () => false;
+export const validateFieldN10 = allPass([
+  isShapeColorNotEquals(SQUARE, isWHITE),
+  isShapeColorNotEquals(TRIANGLE, isWHITE),
+  converge(equals, [SQUARE, TRIANGLE]),
+]);
